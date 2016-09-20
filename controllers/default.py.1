@@ -1,0 +1,233 @@
+# -*- coding: utf-8 -*-
+# this file is released under public domain and you can use without limitations
+
+# -------------------------------------------------------------------------
+# This is a sample controller
+# - index is the default action of any application
+# - user is required for authentication and authorization
+# - download is for downloading files uploaded in the db (does streaming)
+# -------------------------------------------------------------------------
+import webbrowser
+import gtk.gdk
+import datetime
+import time
+import os, shutil
+import glob
+import pygeoip
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.by import By
+import json
+import requests
+import os
+import time
+import threading
+from os import path
+from os import walk
+#from gluon.debug import dbg
+
+
+@auth.requires_login()
+def index():
+    src = get_airport_code()
+    if not src:
+        form = display_code_form()
+    else:
+        form = ''
+        redirect(URL('home'))
+
+    return dict(form=form, src=src)
+
+def elementnode_autocomplete():
+    rows=db((db.airport_info)&(db.airport_info.three_letter_code.like(request.vars.term+'%'))).select(db.airport_info.three_letter_code,distinct=True,orderby=db.airport_info.three_letter_code).as_list()
+    result=[r['three_letter_code']for r in rows]
+    return response.json(result)
+
+@auth.requires_login()
+def home():
+    src = str(get_airport_code())
+    dest = ''
+    if request.args==[]:
+        dest = 'DEN'
+    else:
+        if request.args[0] == 'refresh':
+            process_screenshots()
+        dest = request.args[1]
+    path = request.env.web2py_path +'/applications/' +request.application + '/static/images/' + src + '/' + dest + '/'
+    files= {}
+    image_rows = db((db.user_request_images.destination_code == dest)).select(db.user_request_images.image_path, db.user_request_images.link_to)
+    for i in image_rows:
+        files[i.image_path] = i.link_to
+    dir_path = request.env.web2py_path +'/applications/' +request.application + '/static/images/' + src + '/'
+    dirs = [x[0] for x in os.walk(dir_path)]
+    dirs = [d.replace('/home/www-data/web2py/applications/travel/static/images/', '') for d in dirs]
+    if image_rows:
+        last_refreshed = db((db.user_request_images.destination_code == dest)).select(db.user_request_images.created_on, orderby=~db.user_request_images.created_on, limitby=(0,1)).first().created_on
+        last_refreshed = last_refreshed.strftime("%m/%d/%Y %I:%M:%p")
+    else:
+        last_refreshed = ''
+    return dict(files=files, dest=dest, dirs=dirs, src=src, last_refreshed=last_refreshed)
+
+def images():
+    src = db((db.user_airport_code.created_by==auth.user.id)).select(db.user_request_images.image_path)
+    return dict(src=src)
+
+
+def display_code_form():
+    form = SQLFORM(db.user_airport_code)
+    if form.process().accepted:
+        response.flash = 'form accepted'
+        redirect(URL('home'))
+    elif form.errors:
+        response.flash = 'form has errors'
+    else:
+        response.flash = 'please fill out the form'
+    return form
+
+def location():
+    ip = request.client
+    rawdata = pygeoip.GeoIP(request.env.web2py_path +'/applications/' +request.application + '/static/GeoLiteCity.dat')
+    data = rawdata.record_by_name(ip)
+    if data:
+        longi = data['longitude']
+        lat = data['latitude']
+    else:
+        lat = 100000
+        longi = -10000
+    return dict(lat=lat, longi=longi)
+
+def get_airport_code():
+    src = db((db.user_airport_code.created_by==auth.user.id)).select(db.user_airport_code.three_letter_code)
+    if not src:
+        src = ''
+    else:
+        src = src.first().three_letter_code
+    return src
+
+def image(): # http://.../image/where/ever/it/is.jpeg
+    filename = os.path.join(BASEDIR,'/'.join(request.args))
+    return response.stream(open(filename,'rb'))
+
+def populate_weekend_dates(start_index):
+    weekend_dates = []
+    start = datetime.datetime.now() + datetime.timedelta(days=1)
+    #3 months into the future
+    end =  (start + datetime.timedelta(3*365/12))
+    begin = start
+    delta = datetime.timedelta(days=1)
+    diff = 0
+    #ONLY CALCULATE FRIDAY SINCE YOU CAN DO THE MATH FOR SUNDAY..
+    weekend = ''
+    if(start_index==4):
+        weekend = set([3])
+    elif(start_index==5):
+        weekend = set([4])
+    else:
+        weekend = set([4])
+    while(begin<=end):
+            if(begin.weekday() in weekend):
+                    weekend_dates.append(begin)
+                    diff+=1
+            begin+=delta
+    return weekend_dates
+
+def browser_screenshot(url,start_date,end_date,dest,source):
+        browser = driver = webdriver.PhantomJS()
+        browser.get(url)
+        delay = 0
+        wait = WebDriverWait(browser, delay)
+        wait.until(EC.presence_of_element_located((By.ID, 'root')))
+        time.sleep(1)
+        stringtime = str(start_date) + '->' + str(end_date)
+        newdir = request.env.web2py_path +'/applications/travel/static/images/' + source + '/' + dest + "/"
+        if not os.path.exists(newdir):
+                os.makedirs(newdir)
+        filename = request.env.web2py_path +'/applications/travel/static/images/' + source+ '/' + dest + '/flight' + stringtime + ".png"
+        image = 'flight' + stringtime + ".png"
+        db.user_request_images.insert(image_path=image, link_to=url, source_code = source, destination_code = dest, depart_date = start_date, return_date = end_date )
+        browser.save_screenshot(filename)
+        browser.close()
+
+
+def call_all_destinations(source, weekend_dates, dest, start_index):
+        for d in dest:
+            for date in weekend_dates:
+                start_date = datetime.datetime.strftime(date,'%Y-%m-%d')
+                end_date = ''
+                if(start_index==4):
+                    end_date = datetime.datetime.strftime(date+datetime.timedelta(3),'%Y-%m-%d')
+                elif(start_index==5):
+                    end_date = datetime.datetime.strftime(date+datetime.timedelta(2),'%Y-%m-%d')
+                url = 'https://www.google.com/flights/#search;f='+source+';t='+d+';d='+start_date+';r='+end_date+''
+                browser_screenshot(url,start_date, end_date,d,source)
+                
+
+def delete_files(source):
+    folder = request.env.web2py_path +'/applications/travel/static/images/' + source + '/'
+    db((db.user_request_images.created_by==auth.user.id)).delete()
+    if os.path.isdir(folder):
+        for the_file in os.listdir(folder):
+            file_path = os.path.join(folder, the_file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path): shutil.rmtree(file_path)
+            except Exception as e:
+                print(e)
+
+def process_screenshots():
+    start_index = request.args[0]
+    start_index = int(start_index)
+    weekend_dates = populate_weekend_dates(start_index)
+    source = get_airport_code()
+    delete_files(source)
+    dest = ['DEN','LAX', 'SFO']#, 'ORD', 'MSY','IAD', 'JFK', 'DCA', 'LAX','SEA']
+    if(source in dest):
+        dest.remove(source)
+    call_all_destinations(source, weekend_dates,dest, start_index)
+    db.commit()
+    redirect(URL('home'), client_side=True)
+
+
+def user_profile():
+    form = display_code_form()
+    return dict(form=form)
+
+def user():
+    """
+    exposes:
+    http://..../[app]/default/user/login
+    http://..../[app]/default/user/logout
+    http://..../[app]/default/user/register
+    http://..../[app]/default/user/profile
+    http://..../[app]/default/user/retrieve_password
+    http://..../[app]/default/user/change_password
+    http://..../[app]/default/user/bulk_register
+    use @auth.requires_login()
+        @auth.requires_membership('group name')
+        @auth.requires_permission('read','table name',record_id)
+    to decorate functions that need access control
+    also notice there is http://..../[app]/appadmin/manage/auth to allow administrator to manage users
+    """
+    return dict(form=auth())
+
+
+@cache.action()
+def download():
+    """
+    allows downloading of uploaded files
+    http://..../[app]/default/download/[filename]
+    """
+    return response.download(request, db)
+
+
+def call():
+    """
+    exposes services. for example:
+    http://..../[app]/default/call/jsonrpc
+    decorate with @services.jsonrpc the functions to expose
+    supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
+    """
+    return service()

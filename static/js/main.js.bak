@@ -1,0 +1,12 @@
+jQuery(function(){
+    var MAIN = new Ractive({
+      el: '#target',
+      template: '#template',
+      data: {
+          "name": "Alice",
+          "unread": 7,
+          "total": 10
+        },
+      delimiters : ['{%','%}']
+    });
+});

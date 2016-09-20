@@ -1,0 +1,14 @@
+
+<div id="target">
+{{for post in dest:}}
+<div class="dest_list">
+	 <div class="col-md-1 dest-item" id ="{{=post.three_letter_code}}">
+		<span class="glyphicon glyphicon-pushpin pin-left"></span>  
+		<span class="glyphicon glyphicon-minus pin-right"></span>  
+		<p>
+		{{=post.three_letter_code}}
+		</p>
+	</div>
+</div>
+{{pass}}
+</div>

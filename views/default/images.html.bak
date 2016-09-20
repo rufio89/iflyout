@@ -1,0 +1,7 @@
+{{extend 'layout.html'}}
+<h1>This is the default/images.html template</h1>
+{{for s in src:}}
+<p>
+    {{=s.link_to}}
+</p>
+{{pass}}

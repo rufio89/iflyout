@@ -1,0 +1,20 @@
+{{extend 'layout.html'}}
+<h1>This is the charts/index.html template</h1>
+{{=flight_data}}
+<div id="myfirstchart" style="height: 500px; width:100%"></div>
+<script type="text/javascript">
+   new Morris.Line({
+  // ID of the element in which to draw the chart.
+  element: 'myfirstchart',
+  // Chart data records -- each entry in this array corresponds to a point on
+  // the chart.
+  data: {{=XML(flight_data)}},
+  // The name of the data record attribute that contains x-values.
+  xkey: 'departure',
+  // A list of names of data record attributes that contain y-values.
+  ykeys: ['price'],
+  // Labels for the ykeys -- will be displayed when you hover over the
+  // chart.
+  labels: ['Price']
+});
+</script>

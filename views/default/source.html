@@ -1,0 +1,52 @@
+{{extend 'layout.html'}}
+
+{{if not src:}}
+<h2>Enter Your Source Airport Code</h2>
+<div class="row">
+  <div class="col-md-6">
+    <h3>Popular Three Letter Codes:</h3>
+    <div class="row">
+      <div class="col-md-6">
+        <p class="red-notice">Enter the three letter code into the form. EX: For Chicago enter ORD</p>
+        </div>
+        </div>
+    <div class="col-md-3">
+    <p>Seattle: SEA</p>
+    <p>Denver: DEN</p>
+    <p>San Francisco: SFO</p>
+    </div>
+    <div class="col-md-3">
+    <p>New York(Kennedy): JFK</p>
+    <p>Portland: PDX</p>
+    <p>Los Angeles: LAX</p>
+    </div>
+    <div class="col-md-3">
+    <p>Chicago(Ohare): ORD</p>
+    <p>Washington D.C(Dulles): IAD</p>
+    <p>New Orleans: MSY</p>
+    </div>
+  </div>
+  <div class="col-md-6">
+    {{=form}}
+  </div>
+</div>
+
+{{pass}}
+
+{{if src:}}
+    <divs style="margin-bottom:100px;">
+        <button type="button" name ="seeting_button" onclick = 'window.location="{{=URL('default', 'test')}}";'>Refresh</button>
+    </div>
+{{pass}}
+
+<script type="text/javascript">
+$(document).ready(function(){
+
+  $(function() {
+    $("#no_table_computedName").autocomplete({
+      source: "{{=URL('default', 'elementnode_autocomplete')}}",
+      minLength: 2
+    });
+  });
+});
+</script>

@@ -1,0 +1,466 @@
+{{extend 'layout.html'}}
+<!--<div id="toggle-hide" class="glyphicon glyphicon-menu-right"><span id="setting-text">Setup</span></div> -->
+<div id="primary-section" >
+    <div class="row">
+        <div class="col-md-3">
+                <h3>1.Choose Departure Airport:</h3>
+                <span class="refresh-alert" id="text-source"></span>
+                <input type="text" class="form-control" id="source-airport" placeholder="Chicago">
+                <div class="source-list">
+                    <ul id="source-items" class="list-group">
+
+                    </ul>
+                </div>
+    <!--         <span>(Green is the default)</span> -->
+        </div>
+        </div>
+    <div class="row">
+        <div class="col-md-12">
+            <h3>2.Pick when you want to start your travels:</h3>
+    <!--         <span>(Green is the default)</span> -->
+            <br />
+            <span class="refresh-alert" id="text-days"></span>
+            <form id="radio-form-days">
+                <div class="btn-group" data-toggle="buttons">
+                    <label class="btn btn-primary active">
+                        <input type="radio" name="options" id="option1" value="D4" autocomplete="off" checked> Thursday
+                    </label>
+                    <label class="btn btn-primary">
+                        <input type="radio" name="options" id="option2" value="D5" autocomplete="off"> Friday
+                    </label>
+                </div>
+            </form>
+        </div>
+        </div>
+    <div class="row">
+        <div class="col-md-12">
+        <h3>3.Choose 1 or 3 Months Going Forward:</h3>
+    <!--         <span>(Green is the default)</span> -->
+        <br />
+        <span class="refresh-alert" id="text-future"></span>
+        <form id="radio-form-future">
+                <div class="btn-group" data-toggle="buttons">
+                    <label class="btn btn-primary active">
+                        <input type="radio" name="future-options" id="future-option1" value="F1" autocomplete="off" checked>1 Months
+                    </label>
+                    <label class="btn btn-primary">
+                        <input type="radio" name="future-options" id="future-option2" value="F3" autocomplete="off">3 Months
+                    </label>
+                </div>
+            </form>
+        
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+                <h3>4.Choose Your Arrival Airport(s):</h3>
+                <span class="refresh-alert" id= "text-dests"></span>
+              <div class="form-group">
+                <input type="text" class="form-control" id="dest-airport" placeholder="San Francisco" autocomplete="off">
+             </div>
+            <div class="dest-list">
+                <div id="dest-items">
+
+                </div>
+            </div>
+    <!--         <span>(Green is the default)</span> -->
+        </div>
+        </div>
+    <div class="row">
+        <div class="col-md-12">
+        <h3>5.Click Refresh to Populate Data:</h3>
+        <span class="refresh-alert" id="text-refresh"></span>
+        <br />
+        <br />
+            
+            <span class="refresh-area">
+                <button type="button" class="btn btn-primary start" id ="refresh-btn" >
+                    <span id="refresh-icon" ></span><span class="refresh-text">Get Flights</span>
+                </button>
+            </span>
+        </div>
+    </div>
+</div>
+<div id="price-links">
+                    
+</div>
+<div id="myfirstchart" style="height: 20em; width:100%"></div>
+<!-- 
+<div id="results">
+    
+</div> -->
+
+
+
+<script type="text/javascript">
+
+    var urls = new Array();
+    var dest_str = "";
+    var source_str = "";
+    var day_val = $('input[name=options]:checked', '#radio-form-days').val();
+    var future_val = $('input[name=future-options]:checked', '#radio-form-future').val();
+    var url_value = "/travel/flights/process_data/" + day_val + "/" + future_val + "/";
+    var source = {{= XML(json_data) }};
+    var source_airport = $('#source-airport').val();
+    var source_list = [];
+    var dest_list = [];
+    $( "#source-airport" ).autocomplete({
+        source: function(request, response){
+            var searchTerm = request.term.toLowerCase();
+            var ret = [];
+            $.each(source, function(i, airportItem){
+                if (airportItem.code.toLowerCase().indexOf(searchTerm) !== -1 || airportItem.name.toLowerCase().indexOf(searchTerm) === 0)
+                    ret.push(airportItem.code + ' - ' + airportItem.name);
+                    
+            });
+            
+            response(ret);
+            
+        },
+        select: function(event, ui){
+            console.log(ui.item.label);
+            $(this).val(ui.item.label);
+            addSourceItem();
+        }
+        
+    }).data("ui-autocomplete")._renderItem = function (ul, item) {
+        var newText = String(item.value).replace(
+                new RegExp(this.term, "gi"),
+                "<b>$&</b>");
+
+        return $("<li></li>")
+            .data("item.autocomplete", item)
+            .append("<a>" + newText + "</a>")
+            .appendTo(ul);
+    };
+    
+    $( "#dest-airport" ).autocomplete({
+        source: function(request, response){
+            var searchTerm = request.term.toLowerCase();
+            var ret = [];
+            $.each(source, function(i, airportItem){
+                if (airportItem.code.toLowerCase().indexOf(searchTerm) !== -1 || airportItem.name.toLowerCase().indexOf(searchTerm) === 0)
+                    ret.push(airportItem.code + ' - ' + airportItem.name);
+            });
+            response(ret);
+            
+        },
+        select: function(event, ui, item){
+            console.log(ui.item.label);
+            $(this).val(ui.item.label);
+            addDestItem();           
+            this.value = "";
+            return false;
+        }
+        
+    }).data("ui-autocomplete")._renderItem = function (ul, item) {
+        var newText = String(item.value).replace(
+                new RegExp(this.term, "gi"),
+                "<b>$&</b>");
+
+        return $("<li></li>")
+            .data("item.autocomplete", item)
+            .append("<a>" + newText + "</a>")
+            .appendTo(ul);
+    };
+    
+   $("#radio-form-future").click(function() {
+	console.log(url_value);
+   }); 
+
+
+ 
+    function addDestItem(){
+        var item = $('#dest-airport').val().substring(0,3);
+        var htmlItem = "<li class='list-group-item' id="+ item +"><span class='glyphicon glyphicon-pushpin pin-left'></span>" + item + "<span id ='minus-dest' class='glyphicon glyphicon-minus pin-right'></span></li>";
+        dest_list.push(item);
+//         console.log(source_airport);
+//         console.log(item);
+//         console.log(dest_list);
+        $(htmlItem).appendTo('#dest-items');
+        dest_str = dest_str + "/" + item;
+       
+    };
+    
+     function addSourceItem(){ 
+        var item = $('#source-airport').val().substring(0,3);
+          if(!contains.call(source_list,item)){
+            if(source_list.length > 0){
+                var code = source_list[0];
+                var index = source_list.indexOf(code);
+                if(index > -1){
+                    source_list.splice(code,1);
+                    source_str = source_str.replace("/" + code, "");
+                    var id = "#" + code;
+                    $(id).remove();
+                }
+            }
+            var htmlItem = "<li class='list-group-item' id="+ item +"><span class='glyphicon glyphicon-pushpin pin-left'></span>" + item + "<span id ='minus-source' class='glyphicon glyphicon-minus pin-right'></span></li>";
+            source_list.push(item);
+            $(htmlItem).appendTo('#source-items');
+            source_str = source_str + "/" + item;
+            console.log(source_str);
+
+        }
+        else{
+          show_alert("You already chose that airport", 'text-source');
+        }
+      
+    };
+    
+    var contains = function(needle) {
+    // Per spec, the way to identify NaN is that it is not equal to itself
+    var findNaN = needle !== needle;
+    var indexOf;
+
+    if(!findNaN && typeof Array.prototype.indexOf === 'function') {
+        indexOf = Array.prototype.indexOf;
+    } else {
+        indexOf = function(needle) {
+            var i = -1, index = -1;
+
+            for(i = 0; i < this.length; i++) {
+                var item = this[i];
+
+                if((findNaN && item !== item) || item === needle) {
+                    index = i;
+                    break;
+                }
+            }
+
+            return index;
+        };
+    }
+
+    return indexOf.call(this, needle) > -1;
+};
+
+    $('body').on('click', '#minus-dest',function(e){
+        e.preventDefault();
+//         console.log('here');
+        var code = $(this).parent().attr('id');
+//         console.log(code);
+        $(this).parent().remove();
+        var index = dest_list.indexOf(code);
+        if(index > -1){
+            dest_list.splice(index,1);
+            dest_str = dest_str.replace("/" + code, "");
+            console.log(dest_str);
+        }
+        console.log(dest_list);
+    });
+    
+    
+     $('body').on('click', '#minus-source',function(e){
+        e.preventDefault();
+//         console.log('here');
+        var code = $(this).parent().attr('id');
+//         console.log(code);
+        $(this).parent().remove();
+        var index = source_list.indexOf(code);
+        if(index > -1){
+            source_list.splice(index,1);
+            console.log(dest_str);
+        }
+        console.log(dest_list);
+    });
+
+    function show_alert(value, id_name) {
+        $('#' + id_name + '').html(value);
+        setTimeout(function() {
+            $('#' + id_name + '').html('');
+        }, 3000);
+    };
+
+    function get_flights(new_url){
+        console.log("HEre" + new_url);
+        $.ajax({
+          type: "GET",
+          url: new_url,
+          dataType:"json",
+        }).done(function( data ) {
+            JSON.stringify(data);
+            console.log(data);
+           show_data(data);
+        });
+    };
+    var Div = class{
+        constructor(url, price, airline, departure_date,arrival_airport, return_date){
+            this.url = url;
+            this.price = price;
+            this.airline = airline;
+            this.departure_date = departure_date;
+            this.arrival_airport = arrival_airport;
+            this.return_date = return_date;
+        };
+        create_div(){
+            var destination = "<h1 class='destination-item'>" + this.arrival_airport + "</h2>";
+            var heading = "<h2 class='price-item'>Price: " + this.price + "</h2>";
+            var airline = "<h3 class='airline-item'>Airline: " + this.airline + "</h3>";
+            var departure_info = "<p class='departure-info'>" + this.departure_date + "</hp>";
+            var return_info = "<p>" + this.return_date + "</p>";
+            var text = "<a target='_blank' href=" + this.url + "><div class='flight-item shadow'>" + destination + heading + airline + departure_info + return_info + "</div></a>";
+            return text;
+        };
+    };
+
+    function get_type(thing){
+        if(thing===null)return "[object Null]"; // special case
+        return Object.prototype.toString.call(thing);
+    }
+
+  
+    
+    function show_data(data){
+        var parsed_data = data;
+        var groups = data.length/(data.length/dest_list.length);
+        console.log(groups);
+        console.log(data.length);
+        if(Object.keys(parsed_data).length == 105){
+            if(JSON.parse(parsed_data).hasOwnProperty('ValidationErrors')){
+                var error_obj = JSON.parse(parsed_data)['ValidationErrors'];
+                var error_text = error_obj[0].ParameterName + " " + error_obj[0].ParameterValue + " does not exist. Try another airport." ;
+                show_alert(error_text, 'text-refresh');
+                $('#refresh-btn').button('reset');
+            }
+        }
+        else{
+        
+            var items = [];
+            var div_list = [];
+            for(var i=0;i<data.length;i++){
+                     var obj = parsed_data[i];
+                     items[i] = new Div(obj.url,obj.price, obj.airline, obj.departure_date,obj.arrival_airport, obj.return_date, obj.url);
+            }
+            create_chart(data);
+        }
+        
+    };
+    
+    
+    function create_chart(data){
+        var filtered_data = [];
+        var split = data.length/dest_list.length;
+        var new_obj = {};
+        var struct_data = {};
+        
+       
+        for(i=0;i<split;i++){
+            var groups = data.length/split;
+            for(j=0;j<data.length;j+=split){
+                new_obj["price" + j + i] = data[j+i];
+                struct_data['departure'] = new_obj["price" + j + i].departure_date;
+                struct_data[new_obj["price" + j + i].arrival_airport] = new_obj["price" + j + i].price;
+                console.log(j);
+                console.log(struct_data);
+                if(j==data.length-split){
+                    var obj = {};
+                    obj = clone(struct_data);
+                    console.log(obj);
+                    filtered_data.push(obj);
+                }
+            }
+            console.log(filtered_data);
+        }
+   
+        
+           var chart = Morris.Line({
+        // ID of the element in which to draw the chart.
+        element: 'myfirstchart',
+        // Chart data records -- each entry in this array corresponds to a point on
+        // the chart.
+        data: filtered_data,
+        // The name of the data record attribute that contains x-values.
+        xkey: 'departure',
+        // A list of names of data record attributes that contain y-values.
+        ykeys: dest_list,
+        // Labels for the ykeys -- will be displayed when you hover over the
+        // chart.
+        labels: dest_list,
+        hoverCallback: function(index, options, content) {
+        var price_text ="";
+        var dest_item = "";
+        for(i=0;i<dest_list.length;i++){
+            dest_item = dest_list[i];
+            var c_return_date = new Date(options.data[index].departure);
+            console.log(c_return_date);
+            c_return_date.setDate(c_return_date.getDate() + 3);
+            var return_date = c_return_date.toISOString().slice(0,10).replace(/-/g,"");
+            console.log(return_date);
+            console.log(return_date);
+            price_text = price_text + "<a target='_blank' style = 'color: " + options.lineColors[i] + ";margin-left:5px;' href='https://www.skyscanner.net/transport/flights"+ source_str + "/" + dest_item + "/" + (options.data[index].departure.substring(2,4).concat(options.data[index].departure.substring(5,7))).concat(options.data[index].departure.substring(8,11))+ "/" + (return_date.substring(2,4).concat(return_date.substring(4,5))).concat(return_date.substring(5,8)) + "?locale=en-US&currency=USD&market=US'>" + dest_item + ": $" + options.data[index][dest_item] + "</a>";
+            
+        }
+          
+            $("#price-links").html("<div class='price-link-items'>" + "<h3>Date: " + options.data[index].departure +"</h3><div>" + price_text + "</div></div>");
+        },
+
+    });
+        $("#refresh-icon").removeClass("glyphicon glyphicon-refresh spinning");
+    };
+    
+    
+    function clone(obj) {
+        if (null == obj || "object" != typeof obj) return obj;
+        var copy = obj.constructor();
+        for (var attr in obj) {
+            if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+        }
+        return copy;
+    }
+
+    $('#radio-form-days input').on('change', function() {
+        day_val = $('#radio-form-days .active input').val();
+        url_value = "/travel/flights/process_data/" + day_val + "/" + future_val;
+        console.log(day_val)
+    });
+
+    $('#radio-form-future input').on('change', function() {
+        future_val = $('#radio-form-future .active input').val();
+        url_value = "/travel/flights/process_data/" + day_val + "/" + future_val;
+//             console.log(dest_list);
+//             console.log(url_value);
+    });
+
+    $('#refresh-btn').click(function(e){
+        if(source_list.length == 0){
+           show_alert("Add Your Departure Airport", 'text-source');
+        }
+        else if(dest_list.length == 0){
+           show_alert("Add An Arrival Airport", 'text-dests');
+        }
+        else if((dest_list.length == 0) && ( source_list.length == 0)){
+            console.log("here");
+            show_alert("Awww cmon.. Fill out something..", 'text-refresh');
+        }
+        else{
+            $("#refresh-icon").addClass("glyphicon glyphicon-refresh spinning");
+            e.preventDefault();
+            console.log("URL VALUE: " +url_value);
+            console.log("SOURCE STRING: " + source_str);
+	    console.log("DEST STRING: " + dest_str);
+            $('#results').text();
+//             var $this = $(this);
+//             $this.button('loading');
+            var new_url = url_value  +  source_str + dest_str;
+	    console.log("NEW URL:" + new_url);
+            get_flights(new_url);
+            
+        }
+    });
+
+
+
+    $('#toggle-hide').click(function(e){
+        e.preventDefault();
+        $("#primary-section").toggleClass('hidden');
+        if($("#toggle-hide").hasClass('glyphicon-menu-right')){
+            $("#toggle-hide").removeClass('glyphicon-menu-right');
+            $("#toggle-hide").addClass('glyphicon-menu-down');
+        }
+        else{
+            $("#toggle-hide").removeClass('glyphicon-menu-down');
+            $("#toggle-hide").addClass('glyphicon-menu-right');
+        }
+    });
+</script>

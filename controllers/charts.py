@@ -1,0 +1,8 @@
+# -*- coding: utf-8 -*-
+import json
+
+
+def index(): 
+    rows = db().select(db.user_flight_prices.id, db.user_flight_prices.dest_three_letter_code, db.user_flight_prices.departure_date,db.user_flight_prices.price, orderby=~db.user_flight_prices.departure_date, groupby=db.user_flight_prices.departure_date)
+    flight_data = json.dumps([{'id': r.id, 'dest': r.dest_three_letter_code, 'departure' : r.departure_date, 'price' :  r.price} for r in rows])
+    return dict(flight_data = flight_data)

@@ -1,0 +1,14 @@
+{{extend 'layout.html'}}
+
+
+{{=LOAD('default', 'destinations.load', ajax=True)}}
+
+<script>
+$(document).ready(function(){
+	$(".pin-right" ).click(function() {
+	  console.log("Click");
+	});
+
+});
+
+</script>

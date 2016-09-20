@@ -1,0 +1,339 @@
+timestamp: 2016-05-19T01:02:09.604806
+CREATE TABLE auth_user(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    first_name CHAR(128),
+    last_name CHAR(128),
+    email CHAR(512),
+    password CHAR(512),
+    registration_key CHAR(512),
+    reset_password_key CHAR(512),
+    registration_id CHAR(512)
+);
+success!
+timestamp: 2016-05-19T01:02:09.871895
+CREATE TABLE auth_group(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    role CHAR(512),
+    description TEXT
+);
+success!
+timestamp: 2016-05-19T01:02:10.017244
+CREATE TABLE auth_membership(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER REFERENCES auth_user (id) ON DELETE CASCADE  ,
+    group_id INTEGER REFERENCES auth_group (id) ON DELETE CASCADE  
+);
+success!
+timestamp: 2016-05-19T01:02:10.354960
+CREATE TABLE auth_permission(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    group_id INTEGER REFERENCES auth_group (id) ON DELETE CASCADE  ,
+    name CHAR(512),
+    table_name CHAR(512),
+    record_id INTEGER
+);
+success!
+timestamp: 2016-05-19T01:02:10.561050
+CREATE TABLE auth_event(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    time_stamp TIMESTAMP,
+    client_ip CHAR(512),
+    user_id INTEGER REFERENCES auth_user (id) ON DELETE CASCADE  ,
+    origin CHAR(512),
+    description TEXT
+);
+success!
+timestamp: 2016-05-19T01:02:10.765973
+CREATE TABLE auth_cas(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER REFERENCES auth_user (id) ON DELETE CASCADE  ,
+    created_on TIMESTAMP,
+    service CHAR(512),
+    ticket CHAR(512),
+    renew CHAR(1)
+);
+success!
+timestamp: 2016-05-19T01:02:10.947003
+CREATE TABLE airport_info(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name CHAR(512),
+    city CHAR(512),
+    country CHAR(512),
+    three_letter_code CHAR(512),
+    latitude DOUBLE,
+    longitude DOUBLE
+);
+success!
+timestamp: 2016-05-19T01:02:11.127883
+CREATE TABLE user_airport_code(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    three_letter_code CHAR(512),
+    created_on TIMESTAMP,
+    created_by INTEGER REFERENCES auth_user (id) ON DELETE CASCADE  ,
+    is_active CHAR(1),
+    modified_on TIMESTAMP,
+    modified_by INTEGER REFERENCES auth_user (id) ON DELETE CASCADE  
+);
+success!
+timestamp: 2016-05-19T01:02:11.334593
+CREATE TABLE user_request_images(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    image_path CHAR(512),
+    link_to CHAR(512),
+    source_code CHAR(512),
+    destination_code CHAR(512),
+    depart_date DATE,
+    return_date DATE,
+    created_on TIMESTAMP,
+    created_by INTEGER REFERENCES auth_user (id) ON DELETE CASCADE  ,
+    is_active CHAR(1),
+    modified_on TIMESTAMP,
+    modified_by INTEGER REFERENCES auth_user (id) ON DELETE CASCADE  
+);
+success!
+timestamp: 2016-05-20T15:07:55.393339
+CREATE TABLE progress(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    progress_stuff CHAR(512)
+);
+success!
+timestamp: 2016-05-20T15:19:51.679975
+ALTER TABLE progress ADD percent_val CHAR(512);
+timestamp: 2016-05-20T15:19:51.882377
+ALTER TABLE progress ADD ttl CHAR(512);
+success!
+success!
+timestamp: 2016-05-25T23:53:34.924157
+CREATE TABLE auth_user(
+    id INT AUTO_INCREMENT NOT NULL,
+    first_name VARCHAR(128),
+    last_name VARCHAR(128),
+    email VARCHAR(512),
+    password VARCHAR(512),
+    registration_key VARCHAR(512),
+    reset_password_key VARCHAR(512),
+    registration_id VARCHAR(512),
+    PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2016-05-25T23:53:35.422836
+CREATE TABLE auth_group(
+    id INT AUTO_INCREMENT NOT NULL,
+    role VARCHAR(512),
+    description LONGTEXT,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2016-05-25T23:53:35.554920
+CREATE TABLE auth_membership(
+    id INT AUTO_INCREMENT NOT NULL,
+    user_id INT  , INDEX user_id__idx (user_id), FOREIGN KEY (user_id) REFERENCES auth_user (id) ON DELETE CASCADE,
+    group_id INT  , INDEX group_id__idx (group_id), FOREIGN KEY (group_id) REFERENCES auth_group (id) ON DELETE CASCADE,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2016-05-25T23:53:35.749749
+CREATE TABLE auth_permission(
+    id INT AUTO_INCREMENT NOT NULL,
+    group_id INT  , INDEX group_id__idx (group_id), FOREIGN KEY (group_id) REFERENCES auth_group (id) ON DELETE CASCADE,
+    name VARCHAR(512),
+    table_name VARCHAR(512),
+    record_id INT,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2016-05-25T23:53:35.895019
+CREATE TABLE auth_event(
+    id INT AUTO_INCREMENT NOT NULL,
+    time_stamp DATETIME,
+    client_ip VARCHAR(512),
+    user_id INT  , INDEX user_id__idx (user_id), FOREIGN KEY (user_id) REFERENCES auth_user (id) ON DELETE CASCADE,
+    origin VARCHAR(512),
+    description LONGTEXT,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2016-05-25T23:53:36.359531
+CREATE TABLE auth_cas(
+    id INT AUTO_INCREMENT NOT NULL,
+    user_id INT  , INDEX user_id__idx (user_id), FOREIGN KEY (user_id) REFERENCES auth_user (id) ON DELETE CASCADE,
+    created_on DATETIME,
+    service VARCHAR(512),
+    ticket VARCHAR(512),
+    renew CHAR(1),
+    PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2016-05-25T23:53:36.498673
+CREATE TABLE airport_info(
+    id INT AUTO_INCREMENT NOT NULL,
+    name VARCHAR(512),
+    city VARCHAR(512),
+    country VARCHAR(512),
+    three_letter_code VARCHAR(512),
+    latitude DOUBLE,
+    longitude DOUBLE,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2016-05-25T23:53:36.631428
+CREATE TABLE user_airport_code(
+    id INT AUTO_INCREMENT NOT NULL,
+    three_letter_code VARCHAR(512),
+    created_on DATETIME,
+    created_by INT  , INDEX created_by__idx (created_by), FOREIGN KEY (created_by) REFERENCES auth_user (id) ON DELETE CASCADE,
+    is_active CHAR(1),
+    modified_on DATETIME,
+    modified_by INT  , INDEX modified_by__idx (modified_by), FOREIGN KEY (modified_by) REFERENCES auth_user (id) ON DELETE CASCADE,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2016-05-25T23:53:36.850444
+CREATE TABLE user_request_images(
+    id INT AUTO_INCREMENT NOT NULL,
+    image_path VARCHAR(512),
+    link_to VARCHAR(512),
+    source_code VARCHAR(512),
+    destination_code VARCHAR(512),
+    depart_date DATE,
+    return_date DATE,
+    created_on DATETIME,
+    created_by INT  , INDEX created_by__idx (created_by), FOREIGN KEY (created_by) REFERENCES auth_user (id) ON DELETE CASCADE,
+    is_active CHAR(1),
+    modified_on DATETIME,
+    modified_by INT  , INDEX modified_by__idx (modified_by), FOREIGN KEY (modified_by) REFERENCES auth_user (id) ON DELETE CASCADE,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2016-05-25T23:53:37.031198
+CREATE TABLE progress(
+    id INT AUTO_INCREMENT NOT NULL,
+    progress_stuff INT,
+    ttl INT,
+    percent_val DOUBLE,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2016-05-29T18:26:09.045659
+CREATE TABLE user_destinations(
+    id INT AUTO_INCREMENT NOT NULL,
+    three_letter_code VARCHAR(512),
+    created_on DATETIME,
+    created_by INT  , INDEX created_by__idx (created_by), FOREIGN KEY (created_by) REFERENCES auth_user (id) ON DELETE CASCADE,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+success!
+timestamp: 2016-05-29T18:28:39.375744
+ALTER TABLE user_destinations ADD city INT  , ADD INDEX city__idx (city), ADD FOREIGN KEY (city) REFERENCES airport_info (id) ON DELETE CASCADE;
+success!
+success!
+timestamp: 2016-05-29T18:31:09.003778
+ALTER TABLE user_destinations DROP COLUMN city;
+timestamp: 2016-05-29T18:32:09.006761
+ALTER TABLE user_destinations DROP COLUMN city;
+timestamp: 2016-05-29T18:33:09.013081
+ALTER TABLE user_destinations DROP COLUMN city;
+timestamp: 2016-05-29T18:34:09.011026
+ALTER TABLE user_destinations DROP COLUMN city;
+timestamp: 2016-05-29T18:34:20.301430
+ALTER TABLE user_destinations DROP COLUMN city;
+timestamp: 2016-05-29T18:34:26.891329
+ALTER TABLE user_destinations DROP COLUMN city;
+timestamp: 2016-05-29T18:35:11.082700
+ALTER TABLE user_destinations DROP COLUMN city;
+timestamp: 2016-05-29T18:35:20.778836
+ALTER TABLE user_destinations DROP COLUMN city;
+timestamp: 2016-05-29T18:35:59.434402
+ALTER TABLE user_destinations DROP COLUMN city;
+timestamp: 2016-05-29T18:36:20.223066
+ALTER TABLE user_destinations DROP COLUMN city;
+timestamp: 2016-05-29T18:36:31.468084
+ALTER TABLE user_destinations DROP COLUMN city;
+timestamp: 2016-05-29T18:36:47.584322
+CREATE TABLE user_dest(
+    id INT AUTO_INCREMENT NOT NULL,
+    three_letter_code INT  , INDEX three_letter_code__idx (three_letter_code), FOREIGN KEY (three_letter_code) REFERENCES airport_info (id) ON DELETE CASCADE,
+    created_on DATETIME,
+    created_by INT  , INDEX created_by__idx (created_by), FOREIGN KEY (created_by) REFERENCES auth_user (id) ON DELETE CASCADE,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2016-05-29T18:39:10.782972
+ALTER TABLE user_dest ADD three_letter_code__tmp VARCHAR(512);
+success!
+UPDATE user_dest SET three_letter_code__tmp=three_letter_code;
+success!
+ALTER TABLE user_dest DROP COLUMN three_letter_code;
+timestamp: 2016-05-29T18:42:43.613871
+CREATE TABLE user_dest(
+    id INT AUTO_INCREMENT NOT NULL,
+    three_letter_code VARCHAR(512),
+    created_on DATETIME,
+    created_by INT  , INDEX created_by__idx (created_by), FOREIGN KEY (created_by) REFERENCES auth_user (id) ON DELETE CASCADE,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+timestamp: 2016-05-29T18:43:20.773918
+CREATE TABLE user_dest(
+    id INT AUTO_INCREMENT NOT NULL,
+    three_letter_code VARCHAR(512),
+    created_on DATETIME,
+    created_by INT  , INDEX created_by__idx (created_by), FOREIGN KEY (created_by) REFERENCES auth_user (id) ON DELETE CASCADE,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+timestamp: 2016-05-29T18:44:20.776888
+CREATE TABLE user_dest(
+    id INT AUTO_INCREMENT NOT NULL,
+    three_letter_code VARCHAR(512),
+    created_on DATETIME,
+    created_by INT  , INDEX created_by__idx (created_by), FOREIGN KEY (created_by) REFERENCES auth_user (id) ON DELETE CASCADE,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+timestamp: 2016-05-29T18:44:35.611742
+CREATE TABLE user_dest(
+    id INT AUTO_INCREMENT NOT NULL,
+    three_letter_code VARCHAR(512),
+    created_on DATETIME,
+    created_by INT  , INDEX created_by__idx (created_by), FOREIGN KEY (created_by) REFERENCES auth_user (id) ON DELETE CASCADE,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2016-05-29T20:24:30.729442
+ALTER TABLE user_dest ADD three_letter_code__tmp VARCHAR(512) UNIQUE;
+timestamp: 2016-05-29T20:24:37.773308
+ALTER TABLE user_dest ADD three_letter_code__tmp VARCHAR(512) UNIQUE;
+timestamp: 2016-06-09T23:07:51.896534
+ALTER TABLE user_airport_code ADD three_letter_code__tmp VARCHAR(512) UNIQUE;
+timestamp: 2016-06-09T23:07:55.749589
+ALTER TABLE user_airport_code ADD three_letter_code__tmp VARCHAR(512) UNIQUE;
+timestamp: 2016-06-09T23:08:39.578933
+ALTER TABLE user_airport_code ADD three_letter_code__tmp VARCHAR(512) UNIQUE;
+timestamp: 2016-06-09T23:08:55.940159
+ALTER TABLE user_airport_code ADD three_letter_code__tmp VARCHAR(512) UNIQUE;
+timestamp: 2016-06-09T23:09:09.426414
+ALTER TABLE user_dest ADD three_letter_code__tmp VARCHAR(512) UNIQUE;
+timestamp: 2016-06-09T23:09:55.938933
+ALTER TABLE user_dest ADD three_letter_code__tmp VARCHAR(512) UNIQUE;
+timestamp: 2016-06-09T23:10:55.942174
+ALTER TABLE user_dest ADD three_letter_code__tmp VARCHAR(512) UNIQUE;
+timestamp: 2016-07-06T20:40:20.434091
+CREATE TABLE user_flight_prices(
+    id INT AUTO_INCREMENT NOT NULL,
+    src_three_letter_code VARCHAR(512),
+    dest_three_letter_code VARCHAR(512),
+    price DOUBLE,
+    departure_date VARCHAR(512),
+    return_date VARCHAR(512),
+    created_on DATETIME,
+    created_by INT  , INDEX created_by__idx (created_by), FOREIGN KEY (created_by) REFERENCES auth_user (id) ON DELETE CASCADE,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2016-08-27T16:42:19.542801
+CREATE TABLE non_user_airport_code(
+    id INT AUTO_INCREMENT NOT NULL,
+    three_letter_code VARCHAR(512),
+    created_on DATETIME,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!

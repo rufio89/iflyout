@@ -1,0 +1,216 @@
+<div id="top-bar">{{=full_dest}}</div>
+{{extend 'layout.html'}}
+
+
+<div id="toggle-hide" class="glyphicon glyphicon-menu-right"><span id="setting-text">Setup</span></div>  
+<div id="primary-section" class="hidden">
+    <div class="row">
+        <div class="col-md-12">
+            <h3>1.Pick when you want to start your travels:</h3>
+    <!--         <span>(Green is the default)</span> -->
+            <br />
+            <span class="refresh-alert-text-days"></span>
+            <form id="radio-form-days">
+                <div class="btn-group" data-toggle="buttons">
+                    <label class="btn btn-primary active">
+                        <input type="radio" name="options" id="option1" value="D4" autocomplete="off" checked> Thursday
+                    </label>
+                    <label class="btn btn-primary">
+                        <input type="radio" name="options" id="option2" value="D5" autocomplete="off"> Friday
+                    </label>
+                </div>
+            </form>
+        </div>
+        </div>
+    <div class="row">
+        <div class="col-md-12">
+        <h3>2.Choose 1 or 3 Months Going Forward:</h3>
+    <!--         <span>(Green is the default)</span> -->
+        <br />
+        <span class="refresh-alert-text-future"></span>
+        <form id="radio-form-future">
+                <div class="btn-group" data-toggle="buttons">
+                    <label class="btn btn-primary active">
+                        <input type="radio" name="future-options" id="future-option1" value="F1" autocomplete="off" checked>1 Months
+                    </label>
+                    <label class="btn btn-primary">
+                        <input type="radio" name="future-options" id="future-option2" value="F3" autocomplete="off">3 Months
+                    </label>
+                </div>
+            </form>
+        
+        </div>
+    </div>
+        <div class="row">
+        <div class="col-md-12">
+            <h3>
+        3.Click Each Destination to Refresh:
+        </h3>
+        <span class="max-alert-text"></span>
+            <div class="flight-links">
+                {{for d in dest_picks:}}
+                    <button type="button" id="{{=d.three_letter_code}}" value = "{{=d.three_letter_code }}" class="btn btn-default navbar-btn dests">{{= d.three_letter_code }}</button>
+                {{pass}}
+                <button type="button" class="btn btn-info" id ="highlight-all">Add/Remove All</button>
+            </div>
+        </div>
+        
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+        <h3>4.Click Refresh to Populate Data:</h3>
+        <span>(This my take a minute or two)</span>
+        <br />
+        <br />
+            <span class="refresh-area">
+
+        </span>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <h3>
+        Navigate To Different Pages:
+    </h3>
+        <div class="flight-links">
+            {{for dir in dirs[1:]:}}
+            <a href="{{= URL() + dir}}">
+                <button type="button" id="{{=str(dir).replace(src +'/', '')}}" class="btn btn-default navbar-btn">{{= str(dir)[1:].replace('/', '->')}}</button>
+            </a>
+            {{pass}}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="last-refreshed col-md-12">
+            <h3>Last Refreshed:<span class="small-text">{{=last_refreshed}}</span></h3>
+
+    </div>
+</div>
+<!-- TO SHOW SCREENSHOTS
+<div class="row">
+        {{for key, val in iter(sorted(files.iteritems())): }}
+        <div class="col-md-3 crop">{{=A(IMG(_src=URL('static/images/user_images/' + unique_path + '/' + src + '/' + dest.upper(), key), _alt="My Logo"), _href=val)}}</div>
+        {{pass}}
+</div>
+ -->
+<div class="row">
+    <div class="col-md-12">
+        <h3>City: {{=full_dest}}</h3>
+        <h3>
+            Lowest Price: ${{=lowest_price}}
+        </h3>
+         <div id ="price-links"></div>
+        <div id="myfirstchart" style="height: 20em; width:100%"></div>
+       
+<!--             <canvas id="myChart"></canvas> -->
+    </div>
+</div>
+
+<!-- {{= flight_data}} -->
+
+<script src="{{=URL('static','js/flight_utility.js')}}"></script>
+
+<script type="text/javascript">
+    var json = {{= XML(flight_data) }};
+    var chart = Morris.Line({
+    // ID of the element in which to draw the chart.
+    element: 'myfirstchart',
+    // Chart data records -- each entry in this array corresponds to a point on
+    // the chart.
+    data: {{=XML(flight_data)}},
+    // The name of the data record attribute that contains x-values.
+    xkey: 'departure',
+    pointFillColors: function(row, sidx, type) {
+     return 'red';
+    },
+    hoverCallback: function(index, options, content) {
+       
+        $("#price-links").html("<div class='price-links'>" + "<h3>Price: $" + options.data[index].price + "</h3><br /><h3>Date: " + options.data[index].departure +"</h3><br/><a class =' centerBlock glyphicon glyphicon-plane' target='_blank' href='" + options.data[index].link + "'></a></div>");
+    },
+    // A list of names of data record attributes that contain y-values.
+    ykeys: ['price'],
+    // Labels for the ykeys -- will be displayed when you hover over the
+    // chart.
+    labels: ['Price']
+  
+});
+    chart.on('click',function(i,row){
+       var link = row['link'];
+       var windowSize = "width=" + window.innerWidth + ",height=" + window.innerHeight + ",scrollbars=no";
+       window.open(link, "_blank")
+});
+    
+
+</script>
+<!-- <script>
+    var json = {{= XML(flight_data) }};
+    
+    var prices = [];
+    var dates = [];
+    var links = [];
+    for (var i = 0; i < json.length; i++) {
+        prices.push(json[i].price);
+        dates.push(json[i].departure);
+        links.push("<a href = '" + json[i].link + "' >Link</a>");
+    }
+    
+    console.log(prices + ' ' + dates);
+
+    var data = {
+    labels: dates,
+    datasets: [
+        {
+            label: "Price",
+            fill: false,
+            lineTension: 0.1,
+            backgroundColor: "rgba(75,192,192,0.4)",
+            borderColor: "rgba(75,192,192,1)",
+            borderCapStyle: 'butt',
+            borderDash: [],
+            borderDashOffset: 0.0,
+            borderJoinStyle: 'miter',
+            pointBorderColor: "rgba(75,192,192,1)",
+            pointBackgroundColor: "#fff",
+            pointBorderWidth: 1,
+            pointHoverRadius: 5,
+            pointHoverBackgroundColor: "rgba(75,192,192,1)",
+            pointHoverBorderColor: "rgba(220,220,220,1)",
+            pointHoverBorderWidth: 2,
+            pointRadius: 5,
+            pointHitRadius: 10,
+            data: prices,
+            spanGaps: false,
+        }
+    ]
+};
+
+
+    Chart.defaults.global.animationSteps = 50;
+    Chart.defaults.global.tooltipYPadding = 16;
+    Chart.defaults.global.tooltipCornerRadius = 0;
+    Chart.defaults.global.tooltipTitleFontStyle = "normal";
+    Chart.defaults.global.tooltipFillColor = "rgba(0,160,0,0.8)";
+    Chart.defaults.global.animationEasing = "easeOutBounce";
+    Chart.defaults.global.responsive = true;
+    Chart.defaults.global.scaleLineColor = "black";
+    Chart.defaults.global.scaleFontSize = 16;
+
+    var ctx = document.getElementById("myChart").getContext("2d");
+    var chart = new Chart.Line(ctx, {
+        data: data,
+        pointDotRadius: 10,
+        bezierCurve: false,
+        scaleShowVerticalLines: false,
+        scaleGridLineColor: "black"
+    });
+    var canvas = document.getElementById('myChart');
+    $("#myChart").click(function(e) {
+        var points = chart.getPointsAtEvent(e);
+        console.log(chart.datasets[0].points.indexOf(points[0]));
+    });
+
+</script> -->

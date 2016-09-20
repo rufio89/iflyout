@@ -1,0 +1,29 @@
+{{extend 'layout.html'}}
+
+
+<div id="header">
+    {{=IMG(_src=URL('static', '/images/bg.jpg'), _class='headerBg', _alt='My Logo')}}
+</div>
+
+<div class="row">
+    <div class="col-md-12 col-centered"><h2 class="main-header">Multi-City Flight Data for up to 3 months</h2></div>
+     <div class="col-md-12 col-centered"><h5 class="main-header">Login to Check Your City</h5></div>
+    <div class="col-md-12 col-centered">{{=IMG(_src=URL('static', '/images/main-image.png'), _class='main-img', _alt='My Logo')}}</div>
+</div>
+
+
+
+
+
+
+
+
+
+<script>
+  $(document).ready(function(){
+  $('.index-expl').slick({
+    
+  });
+});
+  
+</script>
