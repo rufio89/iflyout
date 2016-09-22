@@ -69,7 +69,7 @@ def request_flights(start_index, weekend_dates,departure_airport, dest):
                 return_date = datetime.datetime.strftime(date+datetime.timedelta(3),'%Y-%m-%d')
             elif(start_index==5):
                 return_date = datetime.datetime.strftime(date+datetime.timedelta(2),'%Y-%m-%d')
-            url = "http://partners.api.skyscanner.net/apiservices/browsedates/v1.0/US/USD/EN/"+departure_airport+"/"+arrival_airport+"/"+departure_date+"/"+return_date+"?apiKey=if781234598447854911313432786612"
+            url = "http://partners.api.skyscanner.net/apiservices/browsedates/v1.0/US/USD/EN/"+departure_airport+"/"+arrival_airport+"/"+departure_date+"/"+return_date+"?apiKey="
             flight_list = []
             flight_info = { 'price': None, 'airline': None, 'departure_date': None, 'return_date':None, 'departure_airport': None, 'arrival_airport': None, 'url': None}
             try:
